@@ -3,34 +3,20 @@
 from __future__ import annotations
 
 import ctypes
-import sys
-
-
-try:
-    nm_padding = {
-        (3, 10): ((ctypes.c_void_p,) * 14),
-    }[sys.version_info[:2]]
-
-    pt_padding = {
-        (3, 10): ((ctypes.c_ssize_t,) * 5 + (ctypes.c_void_p,) * 7)
-    }[sys.version_info[:2]]
-except KeyError as e:
-    raise RuntimeError(f"Unsupported version {sys.version!r}.") from e
-
 
 binary_func = ctypes.CFUNCTYPE(*((ctypes.py_object,) * 3))
 
 
 class PyNumberMethods(ctypes.Structure):
     _fields_ = [
-        *(("idc", t) for t in nm_padding),
+        *(("_", t) for t in (ctypes.c_void_p,) * 14),
         ("nb_xor", binary_func),
     ]
 
 
 class PyTypeObject(ctypes.Structure):
     _fields_ = [
-        *(("idc", t) for t in pt_padding),
+        *(("_", t) for t in (ctypes.c_ssize_t,) * 5 + (ctypes.c_void_p,) * 7),
         ("tp_as_number", ctypes.POINTER(PyNumberMethods)),
     ]
 
